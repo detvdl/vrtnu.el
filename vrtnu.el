@@ -57,11 +57,11 @@ Default is 31."
 
 (defun vrtnu--select-date-time ()
   "Select date-time for VRT news selection."
-  (lexical-let* ((hours-alist '(("13u" . 13) ("update" . 17) ("19u" . 19) ("laat" . 23)))
-                 (date (decode-time (vrtnu--prompt-date 7)))
-                 (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
-                 (ivy-sort-functions-alist nil)
-                 (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
+  (let* ((hours-alist '(("13u" . 13) ("update" . 17) ("19u" . 19) ("laat" . 23)))
+         (date (decode-time (vrtnu--prompt-date 7)))
+         (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
+         (ivy-sort-functions-alist nil)
+         (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
     `(:date ,(encode-time date) :time ,time)))
 
 ;;;###autoload
