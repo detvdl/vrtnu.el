@@ -14,8 +14,11 @@
 ;;; Commentary:
 ;;; Code:
 
+;; -*- lexical-binding: t -*-
+
 (require 'dash)
 (require 'mpv)
+(eval-when-compile (require 'cl))
 
 (defgroup vrtnu nil
   "VRT NU for emacs.")
@@ -26,13 +29,19 @@ accessing the VRT NU website."
   :type 'file
   :group 'vrtnu)
 
+(defconst vrt--url-format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s")
+
 (defun vrtnu--completion-table (items)
   "Generate completion table from ITEMS collection that maintains order in function using `metadata'."
-  (lambda (string pred action)
-    (if (eq action 'metadata)
-        '(metadata (display-sort-function . identity)
-                   (cycle-sort-function . identity))
-      (complete-with-action action items string pred))))
+  (lexical-let ((items items))
+    (function
+     (lambda (string pred action)
+       (if (eq action 'metadata)
+           '(metadata (display-sort-function . identity)
+                      (cycle-sort-function . identity))
+         (complete-with-action action items string pred))))))
+
+(vrtnu--completion-table '(1 2 3))
 
 (defun vrtnu--prompt-date (&optional days)
   "Prompt user for a date.
@@ -48,11 +57,11 @@ Default is 31."
 
 (defun vrtnu--select-date-time ()
   "Select date-time for VRT news selection."
-  (-let* ((hours-alist '(("13u" . 13) ("update" . 17) ("19u" . 19) ("laat" . 23)))
-          (date (decode-time (vrtnu--prompt-date 7)))
-          (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
-          (ivy-sort-functions-alist nil)
-          (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
+  (lexical-let* ((hours-alist '(("13u" . 13) ("update" . 17) ("19u" . 19) ("laat" . 23)))
+                 (date (decode-time (vrtnu--prompt-date 7)))
+                 (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
+                 (ivy-sort-functions-alist nil)
+                 (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
     `(:date ,(encode-time date) :time ,time)))
 
 ;;;###autoload
@@ -65,7 +74,7 @@ Default is 31."
              (read (buffer-string))))
           ((&plist :date date :time time) (vrtnu--select-date-time))
           (date-fmt (format-time-string "%Y%m%d" date))
-          (news-url (format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s" time date-fmt))
+          (news-url (format vrt--url-format time date-fmt))
           (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
     (mpv-play news-url)))
 
