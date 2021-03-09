@@ -5,7 +5,7 @@
 
 (package-file "vrtnu.el")
 
-(depends-on "mpv" :git "https://github.com/detvdl/mpv.el" :ref "70d9084ade699e85cca46212ac1dcaf9b9c5cd6a" :branch "master")
+(depends-on "mpv" :git "https://github.com/detvdl/mpv.el" :ref "5d8de879a52e3c19dfe299a0ecb46112ad819848" :branch "master")
 (depends-on "dash")
 
 (development

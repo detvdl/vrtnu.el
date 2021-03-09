@@ -76,7 +76,7 @@ Default is 31."
           (date-fmt (format-time-string "%Y%m%d" date))
           (news-url (format vrt--url-format time date-fmt))
           (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
-    (mpv-play news-url)))
+    (mpv-play-url news-url)))
 
 (provide 'vrtnu)
 ;;; vrtnu.el ends here
