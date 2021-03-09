@@ -57,7 +57,7 @@ Default is 31."
 
 (defun vrtnu--select-date-time ()
   "Select date-time for VRT news selection."
-  (let* ((hours-alist '(("13u" . 13) ("update" . 17) ("19u" . 19) ("laat" . 23)))
+  (let* ((hours-alist '(("13u" . 13) ("update" . 18) ("19u" . 19) ("laat" . 23)))
          (date (decode-time (vrtnu--prompt-date 7)))
          (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
          (ivy-sort-functions-alist nil)
