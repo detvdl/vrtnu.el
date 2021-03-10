@@ -41,8 +41,6 @@ accessing the VRT NU website."
                       (cycle-sort-function . identity))
          (complete-with-action action items string pred))))))
 
-(vrtnu--completion-table '(1 2 3))
-
 (defun vrtnu--prompt-date (&optional days)
   "Prompt user for a date.
 Optional DAYS argument can be passed to restrict amount of days shown.
