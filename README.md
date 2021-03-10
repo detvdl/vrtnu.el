@@ -84,7 +84,8 @@ When using completion frameworks such as [ivy.el](https://github.com/abo-abo/swi
 In this case, you can explicitly disable sorting for the `vrt-news` command using the following fragment:
 
 ```emacs-lisp
-(add-to-list 'ivy-sort-functions-alist '(vrt-news . nil) 'append)
+(with-eval-after-load "ivy"
+  (add-to-list 'ivy-sort-functions-alist '(vrt-news . nil) 'append))
 ```
 
 ## Usage
