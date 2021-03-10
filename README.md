@@ -59,13 +59,13 @@ or, with [use-package integration](https://github.com/raxod502/straight.el#integ
 ## Configuration
 
 Currently, the only required configuration is a file that contains your VRT account information.
-It is defined in the format of an emacs-lisp association list.
+It is defined in the format of an emacs-lisp keyword property list (plist).
 
 Example:
 
 ```emacs-lisp
-'((username . "<your-username>")
-  (password . "<your-password>"))
+(:username "<your-username>"
+ :password "<your-password>")
 ```
 
 To point `vrtnu.el` at your custom configuration file, you can set the `vrtnu-config-file` variable.:

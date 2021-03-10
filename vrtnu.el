@@ -24,14 +24,18 @@
   "VRT NU for emacs.")
 
 (defcustom vrtnu-config-file (locate-user-emacs-file ".vrtnu.eld")
-  "The position of the file that holds your user configuration for
-accessing the VRT NU website."
+  "The position of the file that holds your user configuration.
+The file should contain your login information for accessing the VRT NU website.
+This file should contain a keyword plist of the format
+    (:username <username> :password <password>)"
   :type 'file
   :group 'vrtnu)
 
 (defcustom vrtnu-date-prompt-range 7
-  "The amount of days in the past to prompt for when using `vrt-news'."
-  :type 'integer
+  "The amount of days in the past to prompt for when using `vrt-news'.
+Should be a positive integer."
+  :type '(restricted-sexp
+          :match-alternatives (natnump))
   :group 'vrtnu)
 
 (defcustom vrt-date-prompt-format "%A - %d/%m/%Y"
@@ -55,13 +59,12 @@ Uses format described in `format-time-string'."
 (defun vrtnu--prompt-date (&optional days)
   "Prompt user for a date.
 Optional DAYS argument can be passed to restrict amount of days shown.
-Default is 31."
-  (let* ((n (or 7 vrtnu-date-prompt-range))
+Default is defined in `vrtnu-date-prompt-range'."
+  (let* ((n (or days vrtnu-date-prompt-range))
          (day-seq (--annotate (format-time-string vrt-date-prompt-format it)
-                              (--iterate (time-subtract it (days-to-time 1)) (current-time) n)))
+                              (--iterate (time-subtract it (days-to-time 1)) nil n)))
          (input (completing-read "Date: " (vrtnu--completion-table day-seq) nil t nil)))
     (decode-time (cdr (assoc input day-seq)))))
-
 
 (defun vrtnu--select-date-time ()
   "Select date-time for VRT news selection."
@@ -75,13 +78,12 @@ Default is 31."
 (defun vrt-news ()
   "Play selected news from vrt.be/vrtnu."
   (interactive)
-  (-let* (((&alist 'username user 'password pass)
+  (-let* (((&plist :username user :password pass)
            (with-current-buffer (find-file-noselect vrtnu-config-file)
              (goto-char (point-min))
              (read (buffer-string))))
           ((&plist :date date :time time) (vrtnu--select-date-time))
-          (date-fmt (format-time-string "%Y%m%d" date))
-          (news-url (format vrt--url-format time date-fmt))
+          (news-url (format vrt--url-format time (format-time-string "%Y%m%d" date)))
           (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
     (mpv-play-url news-url)))
 
