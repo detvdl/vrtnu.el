@@ -68,6 +68,14 @@ Example:
   (password . "<your-password>"))
 ```
 
+To point `vrtnu.el` at your custom configuration file, you can set the `vrtnu-config-file` variable.:
+
+```emacs-lisp
+(setq vrtnu-config-file "<config-file-location>")
+```
+
+By default, it is set to `<emacs-home>/.vrtnu.eld`
+
 ## Usage
 
 Invoke the interactive `vrt-news` command to be prompted with a selection of dates/times for the past week that are available to watch.
