@@ -29,6 +29,17 @@ accessing the VRT NU website."
   :type 'file
   :group 'vrtnu)
 
+(defcustom vrtnu-date-prompt-range 7
+  "The amount of days in the past to prompt for when using `vrt-news'."
+  :type 'integer
+  :group 'vrtnu)
+
+(defcustom vrt-date-prompt-format "%A - %d/%m/%Y"
+  "Format string to use when prompting for a date in `vrt-news'.
+Uses format described in `format-time-string'."
+  :type 'string
+  :group 'vrtnu)
+
 (defconst vrt--url-format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s")
 
 (defun vrtnu--completion-table (items)
@@ -45,20 +56,18 @@ accessing the VRT NU website."
   "Prompt user for a date.
 Optional DAYS argument can be passed to restrict amount of days shown.
 Default is 31."
-  (let ((days '()))
-    (dotimes (i (or days 31))
-      (setf days (cons (time-subtract (current-time) (days-to-time i)) days)))
-    (let* ((day-seq (nreverse (--annotate (format-time-string "%A - %d/%m/%Y" it) days)))
-           (ivy-sort-functions-alist nil)
-           (input (completing-read "Date: " (vrtnu--completion-table day-seq) nil t nil)))
-      (cdr (assoc input day-seq)))))
+  (let* ((n (or 7 vrtnu-date-prompt-range))
+         (day-seq (--annotate (format-time-string vrt-date-prompt-format it)
+                              (--iterate (time-subtract it (days-to-time 1)) (current-time) n)))
+         (input (completing-read "Date: " (vrtnu--completion-table day-seq) nil t nil)))
+    (decode-time (cdr (assoc input day-seq)))))
+
 
 (defun vrtnu--select-date-time ()
   "Select date-time for VRT news selection."
   (let* ((hours-alist '(("13u" . 13) ("update" . 18) ("19u" . 19) ("laat" . 23)))
-         (date (decode-time (vrtnu--prompt-date 7)))
+         (date (vrtnu--prompt-date))
          (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
-         (ivy-sort-functions-alist nil)
          (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
     `(:date ,(encode-time date) :time ,time)))
 
