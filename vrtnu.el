@@ -44,6 +44,12 @@ Uses format described in `format-time-string'."
   :type 'string
   :group 'vrtnu)
 
+(defconst vrtnu--available-hours-alist
+  '(("13u" . 13)
+    ("update" . 18)
+    ("19u" . 19)
+    ("laat" . 23)))
+
 (defconst vrt--url-format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s")
 
 (defun vrtnu--completion-table (items)
@@ -62,15 +68,19 @@ Optional DAYS argument can be passed to restrict amount of days shown.
 Default is defined in `vrtnu-date-prompt-range'."
   (let* ((n (or days vrtnu-date-prompt-range))
          (day-seq (--annotate (format-time-string vrt-date-prompt-format it)
-                              (--iterate (time-subtract it (days-to-time 1)) (current-time) n))))
+                              (--iterate (time-subtract it (days-to-time 1))
+                                         (current-time)
+                                         n))))
     day-seq))
 
 (defun vrtnu--time-completions (&optional date)
   "Completion table for available times/hours for DATE.
 If DATE is not set, (current-time) is used."
   (let* ((date (decode-time (or date (current-time))))
-         (hours-alist '(("13u" . 13) ("update" . 18) ("19u" . 19) ("laat" . 23)))
-         (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist)))
+         (available-hours (--select (time-less-p
+                                     (encode-time (-replace-at 2 (cdr it) date))
+                                     nil)
+                                    vrtnu--available-hours-alist)))
     available-hours))
 
 ;;;###autoload
@@ -91,8 +101,10 @@ If DATE is not set, (current-time) is used."
                  "Time: "
                  (vrtnu--completion-table (vrtnu--time-completions date))
                  nil t nil))
-          (news-url (format vrt--url-format time (format-time-string "%Y%m%d" date)))
-          (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
+          (news-url
+           (format vrt--url-format time (format-time-string "%Y%m%d" date)))
+          (mpv-default-options
+           `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
     (mpv-play-url news-url)))
 
 (provide 'vrtnu)
