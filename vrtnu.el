@@ -18,7 +18,7 @@
 
 (require 'dash)
 (require 'mpv)
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 
 (defgroup vrtnu nil
   "VRT NU for emacs.")
