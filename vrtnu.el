@@ -56,23 +56,22 @@ Uses format described in `format-time-string'."
                       (cycle-sort-function . identity))
          (complete-with-action action items string pred))))))
 
-(defun vrtnu--prompt-date (&optional days)
-  "Prompt user for a date.
+(defun vrtnu--date-completions (&optional days)
+  "Completion table for available dates.
 Optional DAYS argument can be passed to restrict amount of days shown.
 Default is defined in `vrtnu-date-prompt-range'."
   (let* ((n (or days vrtnu-date-prompt-range))
          (day-seq (--annotate (format-time-string vrt-date-prompt-format it)
-                              (--iterate (time-subtract it (days-to-time 1)) nil n)))
-         (input (completing-read "Date: " (vrtnu--completion-table day-seq) nil t nil)))
-    (decode-time (cdr (assoc input day-seq)))))
+                              (--iterate (time-subtract it (days-to-time 1)) (current-time) n))))
+    day-seq))
 
-(defun vrtnu--select-date-time ()
-  "Select date-time for VRT news selection."
-  (let* ((hours-alist '(("13u" . 13) ("update" . 18) ("19u" . 19) ("laat" . 23)))
-         (date (vrtnu--prompt-date))
-         (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist))
-         (time (completing-read "Time: " (vrtnu--completion-table available-hours) nil t nil)))
-    `(:date ,(encode-time date) :time ,time)))
+(defun vrtnu--time-completions (&optional date)
+  "Completion table for available times/hours for DATE.
+If DATE is not set, (current-time) is used."
+  (let* ((date (decode-time (or date (current-time))))
+         (hours-alist '(("13u" . 13) ("update" . 18) ("19u" . 19) ("laat" . 23)))
+         (available-hours (--select (time-less-p (encode-time (-replace-at 2 (cdr it) date)) nil) hours-alist)))
+    available-hours))
 
 ;;;###autoload
 (defun vrt-news ()
@@ -82,7 +81,16 @@ Default is defined in `vrtnu-date-prompt-range'."
            (with-current-buffer (find-file-noselect vrtnu-config-file)
              (goto-char (point-min))
              (read (buffer-string))))
-          ((&plist :date date :time time) (vrtnu--select-date-time))
+          (date-completions (vrtnu--date-completions))
+          (date (cdr (assoc (completing-read
+                             "Date: "
+                             (vrtnu--completion-table date-completions)
+                             nil t nil)
+                            date-completions)))
+          (time (completing-read
+                 "Time: "
+                 (vrtnu--completion-table (vrtnu--time-completions date))
+                 nil t nil))
           (news-url (format vrt--url-format time (format-time-string "%Y%m%d" date)))
           (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
     (mpv-play-url news-url)))
