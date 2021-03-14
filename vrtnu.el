@@ -105,7 +105,7 @@ If DATE is not set, (current-time) is used."
            (format vrt--url-format time (format-time-string "%Y%m%d" date)))
           (mpv-default-options
            `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
-    (mpv-play-url news-url)))
+    (mpv-start news-url)))
 
 (provide 'vrtnu)
 ;;; vrtnu.el ends here

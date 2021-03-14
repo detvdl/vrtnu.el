@@ -3,51 +3,48 @@ VRT NU support for Emacs
 
 ## Installation
 
-To use `vrtnu.el`, you must have `mpv.el` installed from [this fork/branch](https://github.com/detvdl/mpv.el/tree/feat/play-from-url)
+To use `vrtnu.el`, you must have [mpv.el](https://github.com/kljohann/mpv.el) installed, either from Git or via Melpa.
 
 ### Package.el
 
 You will need to clone both repositories locally, since package.el does not have support for git-hosted packages
 
 ```shell
-git clone -b feat/play-from-url https://github.com/detvdl/mpv.el
+git clone https://github.com/kljohann/mpv.el
 git clone https://github.com/detvdl/vrtnu.el
 ```
 
 In your `init.el` or `.emacs`
 
 ```emacs-lisp
-(add-to-list 'load-path "<path-to-mpv.el>" 'append)
-(add-to-list 'load-path "<path-to-vrtnu.el>" 'append)
+(add-to-list 'load-path "<path-to-mpv.el>")
+(add-to-list 'load-path "<path-to-vrtnu.el>")
 (require 'mpv)
 (with-eval-after-load "mpv"
   (require 'vrtnu))
 ```
 
+Alternatively, you can just install `mpv` from Melpa directly:
+
+```emacs-lisp
+(package-install 'mpv)
+```
+
 ### [Straight.el](https://github.com/raxod502/straight.el)
 
 ```emacs-lisp
-(straight-use-package
- '(mpv :type git :host github
-       :repo "kljohann/mpv.el"
-       :fork (:host github
-              :repo "detvdl/mpv.el"
-              :branch "feat/play-from-url")))
+(straight-use-package 'mpv)
 
-(with-eval-after-load "mpv"
-  (straight-use-package
-   '(vrtnu :type git :host github
-           :repo "detvdl/vrtnu.el")))
+(straight-use-package
+ '(vrtnu :type git :host github
+         :repo "detvdl/vrtnu.el"))
 ```
 
 or, with [use-package integration](https://github.com/raxod502/straight.el#integration-with-use-package-1)
 
 ```emacs-lisp
 (use-package mpv
-  :straight (mpv
-             :host github :type git
-             :repo "kljohann/mpv.el"
-             :fork t))
+  :straight t)
 
 (use-package vrtnu
   :after mpv
@@ -86,6 +83,10 @@ In this case, you can explicitly disable sorting for the `vrt-news` command usin
 ```emacs-lisp
 (with-eval-after-load "ivy"
   (add-to-list 'ivy-sort-functions-alist '(vrt-news . nil) 'append))
+;; For ivy-prescient specifically
+(with-eval-after-load "ivy-prescient"
+  (setq ivy-prescient-sort-commands
+   '(:not swiper swiper-isearch ivy-switch-buffer vrt-news)))
 ```
 
 ## Usage
